@@ -1,0 +1,185 @@
+services:
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginxproxy
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      DEFAULT_HOST: portal.${DOMAIN}
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ${DATA}/certs:/etc/nginx/certs
+      - ${DATA}/nginx-proxy:/usr/share/nginx/html
+      - ${CONF}/nginx-proxy/dhparam:/etc/nginx/dhparam
+      - ${CONF}/nginx-proxy/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    user: ${PUID}:${PGID} 
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+    ports:
+      - 1883:1883
+      - 1884:1884
+    volumes:
+      - ${CONF}/mosquitto/config/mosquitto-ws.conf:/mosquitto/config/mosquitto.conf
+      - ${DATA}/mosquitto/data:/mosquitto/data
+      - ${DATA}/mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb2
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      VIRTUAL_HOST: influxdb.${DOMAIN}
+    ports:
+      - 8086:8086
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/influxdb2/data:/var/lib/influxdb2:rw
+      - ${CONF}/influxdb2/config.yml:/etc/influxdb2/config.yml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    user: ${PUID}:${PGID} 
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      VIRTUAL_HOST: grafana.${DOMAIN}
+    ports:
+      - 3000:3000
+    volumes:
+      - ${DATA}/grafana/data:/var/lib/grafana
+    restart: unless-stopped
+
+  cam2mqtt:
+    image: acasal/cam2mqtt:latest
+    container_name: cam2mqtt
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      VIRTUAL_HOST: cam2mqtt.${DOMAIN}
+    ports:
+      - 8080:8080
+    volumes:
+      - ${CONF}/cam2mqtt/config.yml:/config.yml
+    restart: unless-stopped
+
+  nextcloud:
+    image: ghcr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      NEXTCLOUD_TRUSTED_DOMAINS: nextcloud.${DOMAIN}
+      #TRUSTED_PROXIES: '172.24.0.1'
+      VIRTUAL_HOST: nextcloud.${DOMAIN}
+      #VIRTUAL_PORT: 443
+      #VIRTUAL_PROTO: https
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${CONF}/nextcloud:/config
+      - ${DATA}/nextcloud:/data
+    ports:
+      - 8081:80
+      - 444:443
+    restart: unless-stopped
+    depends_on:
+      - timescaledb
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg14-latest
+    container_name: timescaledb
+    user: ${PUID}:${PGID} 
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      POSTGRES_PASSWORD: ${PASS_POSTGRES}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/timescaledb:/home/postgres/pgdata/data
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+
+  freshrss:
+    image: linuxserver/freshrss
+    container_name: freshrss
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      VIRTUAL_HOST: freshrss.${DOMAIN}
+    volumes:
+      - ${CONF}/freshrss:/config
+    ports:
+      - 8008:80
+    restart: unless-stopped
+    depends_on:
+      - timescaledb
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      VIRTUAL_HOST: gitea.${DOMAIN}
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: ${IP}:5432
+      GITEA__database__NAME: gitea
+      GITEA__database__PASSWD: ${PASS_GITEA}
+      GITEA__database__USER: postgres
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/gitea:/data
+    ports:
+      - 3001:3000
+      - 2221:22
+    restart: unless-stopped
+    depends_on:
+      - timescaledb
+
+  node-muhx:
+    build: ./node-muhx
+    container_name: muhx
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: Europe/Rome
+      VIRTUAL_HOST: portal.${DOMAIN}
+    ports:
+      - 3003:3003
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+
+networks:
+  mac0:
+    external: true
+    name: mac0
+

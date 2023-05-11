@@ -1,3 +1,8 @@
+#custom
+.env
+node-muhx/
+z-backup/
+z-old/
 # Logs
 logs
 *.log
