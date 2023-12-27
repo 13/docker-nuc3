@@ -10,6 +10,10 @@ docker exec -t -i nginxproxy /bin/bash
 influx delete --org muh --bucket muh --start '1970-01-01T00:00:00Z' --stop $(date +"%Y-%m-%dT%H:%M:%SZ") --predicate '_measurement="temperature" AND node="101"' --token ''
 ```
 
+### Nextcloud update
+```
+docker exec -it nextcloud updater.phar
+```
 ### Nextcloud granting access
 ```
 occ config:system:set overwriteprotocol --value="https"

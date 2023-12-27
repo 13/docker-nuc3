@@ -67,7 +67,7 @@ services:
       TZ: Europe/Rome
       VIRTUAL_HOST: grafana.${DOMAIN}
     ports:
-      - 3000:3000
+      - 3001:3000
     volumes:
       - ${DATA}/grafana/data:/var/lib/grafana
     restart: unless-stopped
@@ -86,8 +86,26 @@ services:
       - ${CONF}/cam2mqtt/config.yml:/config.yml
     restart: unless-stopped
 
+      #  neolink:
+      ##image: quantumentangledandy/neolink
+      #build: ./neolink
+      #container_name: neolink
+      #environment:
+      #PUID: ${PUID}
+      #PGID: ${PGID} 
+      #TZ: Europe/Rome
+      #VIRTUAL_HOST: neolink.${DOMAIN}
+      ##RUST_LOG: debug
+      #ports:
+      #- 8554:8554
+      #volumes:
+      #- ${CONF}/neolink/neolink2.toml:/etc/neolink.toml
+      #restart: unless-stopped
+
   nextcloud:
     image: ghcr.io/linuxserver/nextcloud:latest
+    #image: ghcr.io/linuxserver/nextcloud:26.0.2-ls248
+    #image: ghcr.io/linuxserver/nextcloud:25.0.4-ls229
     container_name: nextcloud
     environment:
       PUID: ${PUID}
@@ -148,6 +166,7 @@ services:
       PUID: ${PUID}
       PGID: ${PGID} 
       TZ: Europe/Rome
+      VIRTUAL_PORT: 3000
       VIRTUAL_HOST: gitea.${DOMAIN}
       GITEA__database__DB_TYPE: postgres
       GITEA__database__HOST: ${IP}:5432
@@ -157,8 +176,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/gitea:/data
+      - ${CONF}/gitea/git/.ssh:/data/git/.ssh
     ports:
-      - 3001:3000
+      - 3000:3000
       - 2221:22
     restart: unless-stopped
     depends_on:
