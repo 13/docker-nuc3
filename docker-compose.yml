@@ -57,6 +57,21 @@ services:
       - ${CONF}/influxdb2/config.yml:/etc/influxdb2/config.yml
     restart: unless-stopped
 
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID} 
+      TZ: Europe/Rome
+      VIRTUAL_HOST: victoriametrics.${DOMAIN}
+    ports:
+      - 8428:8428
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/victoriametrics:/victoria-metrics-data
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -183,23 +198,23 @@ services:
     restart: unless-stopped
     network_mode: host
 
-  neolink:
-    #image: quantumentangledandy/neolink
-    # change neolink/Dockerfile
-    # CMD ["/usr/local/bin/neolink", "mqtt-rtsp", "--config", "/etc/neolink.toml"]
-    container_name: neolink
-    build: ./neolink
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: Europe/Rome
-      #RUST_LOG: debug
-    ports:
-      - 8554:8554
-    volumes:
-      - ${CONF}/neolink/neolink.toml:/etc/neolink.toml
-    restart: unless-stopped
-    network_mode: host
+#  neolink:
+#    #image: quantumentangledandy/neolink
+#    # change neolink/Dockerfile
+#    # CMD ["/usr/local/bin/neolink", "mqtt-rtsp", "--config", "/etc/neolink.toml"]
+#    container_name: neolink
+#    build: ./neolink
+#    environment:
+#      PUID: ${PUID}
+#      PGID: ${PGID}
+#      TZ: Europe/Rome
+#      #RUST_LOG: debug
+#    ports:
+#      - 8554:8554
+#    volumes:
+#      - ${CONF}/neolink/neolink.toml:/etc/neolink.toml
+#    restart: unless-stopped
+#    network_mode: host
 
   zigbee2mqtt:
     image: koenkk/zigbee2mqtt
@@ -208,15 +223,29 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: Europe/Rome
-      PROXY_LOCATION: zigbee2mqtt
       VIRTUAL_HOST: zigbee2mqtt.${DOMAIN}
-      VIRTUAL_PORT: 80
     volumes:
       - ${CONF}/zigbee2mqtt:/app/data
-      - /run/udev:/run/udev:ro
     ports:
       - 8200:8200
     restart: unless-stopped
+    network_mode: host
+
+  homeassistant:
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    container_name: homeassistant
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: Europe/Rome
+      VIRTUAL_HOST: ha.${DOMAIN}
+    volumes:
+      - ${CONF}/homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8123:8123
+    restart: unless-stopped
+    #privileged: true
     network_mode: host
 
 networks:

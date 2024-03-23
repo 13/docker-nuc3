@@ -42,4 +42,6 @@ docker network create -d macvlan --subnet=192.168.22.0/24 --gateway=192.168.22.1
 docker compose pull
 docker compose down && docker compose rm
 docker compose up --build
+
+docker compose up --build zigbee2mqtt
 ```
