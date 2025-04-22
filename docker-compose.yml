@@ -24,22 +24,22 @@ services:
         max-size: 10m
         max-file: 3
 
-  mosquitto:
-    image: eclipse-mosquitto
-    container_name: mosquitto
-    user: ${PUID}:${PGID} 
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID} 
-      TZ: Europe/Rome
-    ports:
-      - 1883:1883
-      - 1884:1884
-    volumes:
-      - ${CONF}/mosquitto/config/mosquitto-ws.conf:/mosquitto/config/mosquitto.conf
-      - ${DATA}/mosquitto/data:/mosquitto/data
-      - ${DATA}/mosquitto/log:/mosquitto/log
-    restart: unless-stopped
+#  mosquitto:
+#    image: eclipse-mosquitto
+#    container_name: mosquitto
+#    user: ${PUID}:${PGID} 
+#    environment:
+#      PUID: ${PUID}
+#      PGID: ${PGID} 
+#      TZ: Europe/Rome
+#    ports:
+#      - 1883:1883
+#      - 1884:1884
+#    volumes:
+#      - ${CONF}/mosquitto/config/mosquitto-ws.conf:/mosquitto/config/mosquitto.conf
+#      - ${DATA}/mosquitto/data:/mosquitto/data
+#      - ${DATA}/mosquitto/log:/mosquitto/log
+#    restart: unless-stopped
 
   influxdb:
     image: influxdb:latest
@@ -57,20 +57,20 @@ services:
       - ${CONF}/influxdb2/config.yml:/etc/influxdb2/config.yml
     restart: unless-stopped
 
-  victoriametrics:
-    image: victoriametrics/victoria-metrics:latest
-    container_name: victoriametrics
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID} 
-      TZ: Europe/Rome
-      VIRTUAL_HOST: victoriametrics.${DOMAIN}
-    ports:
-      - 8428:8428
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${DATA}/victoriametrics:/victoria-metrics-data
-    restart: unless-stopped
+#  victoriametrics:
+#    image: victoriametrics/victoria-metrics:latest
+#    container_name: victoriametrics
+#    environment:
+#      PUID: ${PUID}
+#      PGID: ${PGID} 
+#      TZ: Europe/Rome
+#      VIRTUAL_HOST: victoriametrics.${DOMAIN}
+#    ports:
+#      - 8428:8428
+#    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+#      - ${DATA}/victoriametrics:/victoria-metrics-data
+#    restart: unless-stopped
 
   grafana:
     image: grafana/grafana
@@ -216,20 +216,20 @@ services:
 #    restart: unless-stopped
 #    network_mode: host
 
-  zigbee2mqtt:
-    image: koenkk/zigbee2mqtt
-    container_name: zigbee2mqtt
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: Europe/Rome
-      VIRTUAL_HOST: zigbee2mqtt.${DOMAIN}
-    volumes:
-      - ${CONF}/zigbee2mqtt:/app/data
-    ports:
-      - 8200:8200
-    restart: unless-stopped
-    network_mode: host
+#  zigbee2mqtt:
+#    image: koenkk/zigbee2mqtt
+#    container_name: zigbee2mqtt
+#    environment:
+#      PUID: ${PUID}
+#      PGID: ${PGID}
+#      TZ: Europe/Rome
+#      VIRTUAL_HOST: zigbee2mqtt.${DOMAIN}
+#    volumes:
+#      - ${CONF}/zigbee2mqtt:/app/data
+#    ports:
+#      - 8200:8200
+#    restart: unless-stopped
+#    network_mode: host
 
   homeassistant:
     image: "ghcr.io/home-assistant/home-assistant:stable"
@@ -248,8 +248,22 @@ services:
     #privileged: true
     network_mode: host
 
+#  tasmoadmin:
+#    image: ghcr.io/tasmoadmin/tasmoadmin:latest
+#    container_name: tasmoadmin
+#    user: ${PUID}:${PGID} 
+#    environment:
+#      PUID: ${PUID}
+#      PGID: ${PGID} 
+#      TZ: Europe/Rome
+#      VIRTUAL_HOST: tasmota.${DOMAIN}
+#    ports:
+#      - 8007:80
+#    volumes:
+#      - ${DATA}/tasmoadmin/data:/data
+#    restart: unless-stopped
+
 networks:
   mac0:
     external: true
     name: mac0
-
